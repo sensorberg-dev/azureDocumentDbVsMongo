@@ -1,0 +1,83 @@
+buildscript {
+    // define GLOBAL variables:
+    rootProject.ext.springBootVersion = "1.3.6.RELEASE"
+    rootProject.ext.queryDslVersion = "3.7.4"
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${rootProject.springBootVersion}"
+        classpath "com.ewerk.gradle.plugins:querydsl-plugin:1.0.3"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+apply plugin: "com.ewerk.gradle.plugins.querydsl"
+
+jar {
+    baseName = 'sb-docdb-test'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+querydsl {
+    // we use mongodb
+    springDataMongo = true
+}
+
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    compile.exclude module: "spring-boot-starter-tomcat"
+}
+
+configurations {
+    queryDslTool
+}
+
+
+dependencies {
+    // for functionality:
+    compile "org.springframework.boot:spring-boot-starter-web:${rootProject.springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-data-mongodb:${rootProject.springBootVersion}"
+    compile "com.mysema.querydsl:querydsl-mongodb:${rootProject.queryDslVersion}"
+    // compile 'org.mongodb.morphia:morphia:1.2.1'
+    compile "com.mysema.querydsl:querydsl-apt:${rootProject.queryDslVersion}"
+
+    // for nicer development:
+    compile "org.projectlombok:lombok:1.16.8"
+    compile "org.springframework.boot:spring-boot-starter-undertow:${rootProject.springBootVersion}"
+    if (rootProject.hasProperty('dev')) {
+        compile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:1.50.5"
+    }
+
+    // for testing:
+    testCompile "org.springframework.boot:spring-boot-starter-test:${rootProject.springBootVersion}"
+}
+
+processResources {
+    filesMatching('**/application.yml') {
+        filter {
+            if (rootProject.hasProperty('dev')) {
+                it.replace('#spring.profiles.active#', 'dev')
+            } else {
+                it.replace('#spring.profiles.active#', 'prod')
+            }
+        }
+    }
+}
+
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
+}

@@ -1,0 +1,8 @@
+.idea/**
+*.iml
+
+.Trashes
+.git
+.gradle
+/build/**
+/src/querydsl/**
